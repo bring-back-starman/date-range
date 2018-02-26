@@ -30,8 +30,8 @@ The order of each part is not important.
 
 - **TBD:** TBD, TBA, empty
 - **Year:** 2019
-- **Half:** 2019 H1, H2 2020
-- **Quarter:** 2018 Q1, Q4 2022
-- **Month:** 2019 Apr, Jan 2020, December 2022
+- **Half:** 2019 H1, H2 2020, H2 18
+- **Quarter:** 2018 Q1, Q4 2022, Q2 19
+- **Month:** 2019 Apr, Jan 2020, December 2022, Dec 18
 - **Date:** 12 Feb 18, 2022 Jun 20
 - **Date Time:** 2018 Apr 2 \[20:30], dec 25 2020 18:31

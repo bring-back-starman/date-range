@@ -12,7 +12,7 @@ const Parts = {
   SKIP: 's',
 };
 
-function mapPartType(part, alreadyFound = []) {
+function mapPartType(part, numberOfParts, alreadyFound = []) {
   if (['tba', 'tbd', 'net'].includes(part.toLowerCase())) {
     return {
       value: null,
@@ -80,6 +80,13 @@ function mapPartType(part, alreadyFound = []) {
         type: Parts.DAY,
       };
     }
+
+    if (numberOfParts === 2) {
+      return {
+        value: parseInt('20' + part),
+        type: Parts.YEAR,
+      };
+    }
   }
 
   if (part.match(/^\[?([01]\d|2[0-3]):[0-5]\d]?$/)) {
@@ -105,7 +112,7 @@ class DateRange {
     }
 
     // Map obvious types
-    let parts = value.trim().split(/\s/).map(part => ({ part, ...mapPartType(part)}));
+    let parts = value.trim().split(/\s/).map(part => ({ part, ...mapPartType(part, parts.length)}));
 
     let foundParts = _.map(parts, 'type').filter(_.identity);
 
@@ -115,7 +122,7 @@ class DateRange {
     }
 
     // Try again to map remaining unknown parts knowing which part were already found
-    parts = parts.map(part => part.type ? part : { part: part.part, ...mapPartType(part.part, foundParts)});
+    parts = parts.map(part => part.type ? part : { part: part.part, ...mapPartType(part.part, parts.length, foundParts)});
 
     // Handle "23 Apr 18" format
     if (_.isEqual(_.map(parts, 'type'), [undefined, Parts.MONTH, undefined]) && parts[0].part.match(/^\d{2}$/) && parts[2].part.match(/^\d{2}$/)) {
