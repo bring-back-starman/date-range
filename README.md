@@ -2,6 +2,11 @@
 
 The DateRange class parses a string representing a date.
 
+## Install
+```
+yarn add bring-back-starman/date-range
+```
+
 ## How to use
 ```
 import DateRange from 'date-range';
