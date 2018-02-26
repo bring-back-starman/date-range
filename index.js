@@ -112,13 +112,13 @@ class DateRange {
     }
 
     // Map obvious types
-    let parts = value.trim().split(/\s/).map(part => ({ part, ...mapPartType(part, parts.length)}));
+    let parts = value.trim().split(/\s+/).map(part => ({ part, ...mapPartType(part)}));
 
     let foundParts = _.map(parts, 'type').filter(_.identity);
 
     // Check for doubles
     if (foundParts.length !== _.uniq(foundParts).length) {
-      throw new Error(`Could not parse date "${value}", same part found multiple times`);
+      throw new Error('Could not parse date "' + value + '", same part found multiple times');
     }
 
     // Try again to map remaining unknown parts knowing which part were already found
@@ -144,7 +144,7 @@ class DateRange {
     foundParts = _.map(parts, 'type');
 
     if (foundParts.includes(undefined)) {
-      throw new Error(`Could not parse date "${value}", some parts are still undefined`);
+      throw new Error('Could not parse date "' + value + '", some parts are still undefined');
     }
 
     const data = {};

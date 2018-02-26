@@ -3,10 +3,15 @@
   "version": "1.0.0",
   "description": "A simple date range class",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "jest"
+  },
   "author": "Nicolas Keller",
   "dependencies": {
     "lodash": "^4.17.5",
     "moment": "^2.20.1"
+  },
+  "devDependencies": {
+    "jest": "^22.4.2"
   }
 }
