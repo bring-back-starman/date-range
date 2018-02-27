@@ -1,44 +1,44 @@
 const DateRange = require('./index');
 
 test('TBA', () => {
-  new DateRange('TBA');
-  new DateRange('TBD');
+  expect(new DateRange('TBA')).toHaveProperty('type', DateRange.Type.TBA);
+  expect(new DateRange('TBD')).toHaveProperty('type', DateRange.Type.TBA);
 });
 
 test('Year', () => {
-  new DateRange('2019');
-  new DateRange('  2019  ');
+  expect(new DateRange('2019')).toHaveProperty('type', DateRange.Type.YEAR);
+  expect(new DateRange(' 2019  ')).toHaveProperty('type', DateRange.Type.YEAR);
 });
 
 test('Half', () => {
-  new DateRange('2018 H1');
-  new DateRange('H2 2018 ');
-  new DateRange('H1 18');
-  new DateRange(' 18  H2');
+  expect(new DateRange('2018 H1')).toHaveProperty('type', DateRange.Type.HALF);
+  expect(new DateRange('H2 2018 ')).toHaveProperty('type', DateRange.Type.HALF);
+  expect(new DateRange('H1 18')).toHaveProperty('type', DateRange.Type.HALF);
+  expect(new DateRange(' 18  H2')).toHaveProperty('type', DateRange.Type.HALF);
 });
 
 test('Quarter', () => {
-  new DateRange('2018 Q1');
-  new DateRange('Q2 2018 ');
-  new DateRange('Q3 18');
-  new DateRange(' 18  Q4');
+  expect(new DateRange('2018 Q1')).toHaveProperty('type', DateRange.Type.QUARTER);
+  expect(new DateRange('Q2 2018 ')).toHaveProperty('type', DateRange.Type.QUARTER);
+  expect(new DateRange('Q3 18 ')).toHaveProperty('type', DateRange.Type.QUARTER);
+  expect(new DateRange(' 18  Q4')).toHaveProperty('type', DateRange.Type.QUARTER);
 });
 
 test('Month', () => {
-  new DateRange('2018 Apr');
-  new DateRange('Jan 2018 ');
-  new DateRange('December 18');
-  new DateRange(' 18  April');
+  expect(new DateRange('2018 Apr')).toHaveProperty('type', DateRange.Type.MONTH);
+  expect(new DateRange('Jan 2018 ')).toHaveProperty('type', DateRange.Type.MONTH);
+  expect(new DateRange('December 18')).toHaveProperty('type', DateRange.Type.MONTH);
+  expect(new DateRange(' 18  April')).toHaveProperty('type', DateRange.Type.MONTH);
 });
 
 test('Date', () => {
-  new DateRange('dec 25 2020');
-  new DateRange('2018 Apr 2');
-  new DateRange('02 December 2018');
+  expect(new DateRange('dec 25 2020')).toHaveProperty('type', DateRange.Type.DATE);
+  expect(new DateRange('2018 Apr 2')).toHaveProperty('type', DateRange.Type.DATE);
+  expect(new DateRange('02 December 2018')).toHaveProperty('type', DateRange.Type.DATE);
 });
 
 test('Date Time', () => {
-  new DateRange('dec 25 2020 18:31');
-  new DateRange('2018 Apr 2 [20:30]');
-  new DateRange('02 December 15:07 2018');
+  expect(new DateRange('dec 25 2020 18:31')).toHaveProperty('type', DateRange.Type.DATETIME);
+  expect(new DateRange('2018 Apr 2 [20:30]')).toHaveProperty('type', DateRange.Type.DATETIME);
+  expect(new DateRange('02 December 15:07 2018')).toHaveProperty('type', DateRange.Type.DATETIME);
 });

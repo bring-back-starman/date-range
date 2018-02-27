@@ -1,108 +1,206 @@
 const moment = require('moment');
 const _ = require('lodash');
 
+// Possible types of a Part
+const TIME = 't';
+const DAY = 'd';
+const MONTH = 'm';
+const QUARTER = 'q';
+const HALF = 'h';
+const YEAR = 'y';
+const SKIP = 's';
 
-const Parts = {
-  TIME: 't',
-  DAY: 'd',
-  MONTH: 'm',
-  QUARTER: 'q',
-  HALF: 'h',
-  YEAR: 'y',
-  SKIP: 's',
-};
+// Parts that are recognized but should be skipped
+const skippableParts = ['tba', 'tbd', 'net'];
 
-function mapPartType(part, numberOfParts, alreadyFound = []) {
-  if (['tba', 'tbd', 'net'].includes(part.toLowerCase())) {
-    return {
-      value: null,
-      type: Parts.SKIP,
-    };
-  }
+class Part {
+  constructor(value) {
+    this.raw = value.trim().toLowerCase();
 
-  if (part.match(/^20\d{2}$/)) {
-    return {
-      value: parseInt(part),
-      type: Parts.YEAR,
-    };
-  }
-
-  if (moment(part, ['MMM']).isValid()) {
-    return {
-      value: parseInt(moment(part, ['MMM']).format('M')),
-      type: Parts.MONTH,
-    };
-  }
-
-  if (part.match(/^Q[1-4]$/)) {
-    return {
-      value: parseInt(part[1]),
-      type: Parts.QUARTER,
-    };
-  }
-
-  if (part.match(/^H[12]$/)) {
-    return {
-      value: parseInt(part[1]),
-      type: Parts.HALF,
-    };
-  }
-
-  if (part.match(/^\d{1,2}$/)) {
-    const val = parseInt(part);
-
-    // Cannot be a day
-    if (val > 31) {
-      return {
-        value: parseInt('20' + part),
-        type: Parts.YEAR,
-      };
+    if (skippableParts.includes(this.raw)) {
+      this.value = null;
+      this.type = SKIP;
     }
 
-    // Cannot be a year
-    if (part.length === 1) {
-      return {
-        value: val,
-        type: Parts.DAY,
-      };
+    // Anything that looks like 20XX is a year
+    if (this.raw.match(/^20\d{2}$/)) {
+      this.setYear();
     }
 
-    if (alreadyFound.includes(Parts.DAY) && !alreadyFound.includes(Parts.YEAR)) {
-      return {
-        value: parseInt('20' + part),
-        type: Parts.YEAR,
-      };
+    // Use moment to detect months (Apr and April works)
+    if (moment(this.raw, ['MMM']).isValid()) {
+      this.setMonth();
     }
 
-    if (alreadyFound.includes(Parts.YEAR) && !alreadyFound.includes(Parts.DAY)) {
-      return {
-        value: val,
-        type: Parts.DAY,
-      };
+    // Anything that looks like QX is a quarter
+    if (this.raw.match(/^q[1-4]$/)) {
+      this.setQuarter();
     }
 
-    if (numberOfParts === 2) {
-      return {
-        value: parseInt('20' + part),
-        type: Parts.YEAR,
-      };
+    // Anything that looks like HX is a half year
+    if (this.raw.match(/^h[12]$/)) {
+      this.setHalfYear();
+    }
+
+    // A one digit number
+    if (this.raw.match(/^\d$/)) {
+      this.setDay();
+    }
+
+    // A two digit number greater than 31 cannot be a day, it must be a year
+    if (this.raw.match(/^\d{2}$/) && parseInt(this.raw) > 31) {
+      this.setYear();
+    }
+
+    // Anything that looks like HH:MM is a time
+    if (this.raw.match(/^\[?([01]\d|2[0-3]):[0-5]\d]?$/)) {
+      this.setTime();
     }
   }
 
-  if (part.match(/^\[?([01]\d|2[0-3]):[0-5]\d]?$/)) {
-    return {
-      value: _.trim(part, '[]'),
-      type: Parts.TIME,
-    };
+  /**
+   * Try to guess type with info about other parts
+   * @param foundTypes List of found types, this part cannot be one of them
+   * @param numberOfParts Number of parts found
+   */
+  guessTypeKnowing(foundTypes, numberOfParts) {
+    if (this.type) {
+      return;
+    }
+
+    const found = (type) => foundTypes.includes(type);
+    const foundOnly = (type) => found(type) && foundTypes.length === 1;
+
+    // A two digit number
+    if (this.raw.match(/^\d{2}$/)) {
+      // Found day but not year
+      if (found(DAY) && !found(YEAR)) {
+        this.setYear();
+      }
+
+      // Found year but not day
+      if (found(YEAR) && !found(DAY)) {
+        this.setDay();
+      }
+
+      // Found only two parts and year is missing
+      if (numberOfParts === 2 && (foundOnly(HALF) || foundOnly(QUARTER) || foundOnly(MONTH))) {
+        this.setYear()
+      }
+    }
+  }
+
+  setMonth() {
+    this.value = parseInt(moment(this.raw, ['MMM']).format('M'));
+    this.type = MONTH;
+  }
+
+  setQuarter() {
+    this.value = parseInt(this.raw[1]);
+    this.type = QUARTER;
+  }
+
+  setHalfYear() {
+    this.value = parseInt(this.raw[1]);
+    this.type = HALF;
+  }
+
+  setTime() {
+    this.value = _.trim(this.raw, '[]');
+    this.type = TIME;
+  }
+
+  setDay() {
+    this.value = parseInt(this.raw);
+    this.type = DAY;
+  }
+
+  setYear() {
+    if (this.raw.match(/^\d{2}$/)) {
+      this.value = parseInt('20' + this.raw);
+    } else {
+      this.value = parseInt(this.raw);
+    }
+
+    this.type = YEAR;
   }
 }
 
-function sameValues(a, b) {
-  if (a.length !== b.length) {
-    return false;
+class PartsList {
+  constructor(value) {
+    this.parts = value
+      .trim()
+      .split(/\s+/)
+      .map(part => new Part(part))
+      .filter(({ type }) => type !== SKIP)
+    ;
   }
 
-  return a.every(v => b.includes(v));
+  /**
+   * Get an array of types found
+   * @param includeUndefined Set to false to filter out undefined
+   */
+  types(includeUndefined = true) {
+    return _.map(this.parts, 'type').filter(includeUndefined ? _.stubTrue : _.identity)
+  }
+
+  /**
+   * @returns {boolean} True if at least two parts have the same type (excluding undefined)
+   */
+  hasDuplicateTypes() {
+    const types = this.types(false);
+
+    return types.length !== _.uniq(types).length
+  }
+
+  /**
+   * Manually handle special snowflakes
+   */
+  guessRemainingTypes() {
+    this.parts.forEach(part => part.guessTypeKnowing(this.types(false), this.parts.length));
+
+    // Handle "23 Apr 18" format
+    if (this.isFormat([/^\d{2}$/, MONTH, /^\d{2}$/])) {
+      this.parts[0].setDay();
+      this.parts[2].setYear();
+    }
+  }
+
+  /**
+   * Checks if this list is a given format
+   * @param format An array of format for each part, supports PartType and RegExp
+   */
+  isFormat(format) {
+    if (format.length !== this.parts.length) {
+      return false;
+    }
+
+    return format.every((f, index) => {
+      if (_.isString(f)) {
+        return this.parts[index].type === f;
+      }
+
+      if (_.isRegExp(f)) {
+        return this.parts[index].raw.match(f);
+      }
+
+      throw new Error('Unsupported format');
+    });
+  }
+
+  hasExactlyTypes(types) {
+    let ownTypes = this.types();
+
+    if (types.length !== ownTypes.length) {
+      return false;
+    }
+
+    return types.every(t => ownTypes.includes(t));
+  }
+
+  get(type) {
+    return _.find(this.parts, { type });
+  }
 }
 
 class DateRange {
@@ -111,92 +209,58 @@ class DateRange {
       throw new Error('Value must be a string');
     }
 
-    // Map obvious types
-    let parts = value.trim().split(/\s+/).map(part => ({ part, ...mapPartType(part)}));
+    let parts = new PartsList(value);
 
-    let foundParts = _.map(parts, 'type').filter(_.identity);
-
-    // Check for doubles
-    if (foundParts.length !== _.uniq(foundParts).length) {
+    if (parts.hasDuplicateTypes()) {
       throw new Error('Could not parse date "' + value + '", same part found multiple times');
     }
 
-    // Try again to map remaining unknown parts knowing which part were already found
-    parts = parts.map(part => part.type ? part : { part: part.part, ...mapPartType(part.part, parts.length, foundParts)});
+    parts.guessRemainingTypes();
 
-    // Handle "23 Apr 18" format
-    if (_.isEqual(_.map(parts, 'type'), [undefined, Parts.MONTH, undefined]) && parts[0].part.match(/^\d{2}$/) && parts[2].part.match(/^\d{2}$/)) {
-      parts[0] = {
-        ...parts[0],
-        value: parts[0].part,
-        type: Parts.DAY,
-      };
-
-      parts[2] = {
-        ...parts[2],
-        value: parts[2].part,
-        type: Parts.YEAR,
-      };
-    }
-
-    // Remove SKIP parts
-    parts = parts.filter(({ type }) => type !== Parts.SKIP);
-    foundParts = _.map(parts, 'type');
-
-    if (foundParts.includes(undefined)) {
+    if (parts.types().includes(undefined)) {
       throw new Error('Could not parse date "' + value + '", some parts are still undefined');
     }
 
-    const data = {};
+    // Build range based on what parts we found
 
-    parts.forEach(part => data[part.type] = part.value);
-
-    // Build
-    if (sameValues(foundParts, [])) {
+    if (parts.hasExactlyTypes([])) {
       this.type = DateRange.Type.TBA;
     }
 
-    if (sameValues(foundParts, [Parts.YEAR])) {
+    if (parts.hasExactlyTypes([YEAR])) {
       this.type = DateRange.Type.YEAR;
-      const from = moment(data[Parts.YEAR], 'YYYY');
-      this.from = from.format();
-      this.to = from.add(1, 'year').format();
+      this.setRange(moment(parts.get(YEAR), 'YYYY'), 1, 'year');
     }
 
-    if (sameValues(foundParts, [Parts.YEAR, Parts.HALF])) {
+    if (parts.hasExactlyTypes([YEAR, HALF])) {
       this.type = DateRange.Type.HALF;
-      const from = moment(data[Parts.YEAR], 'YYYY').add(6 * (data[Parts.HALF] - 1), 'months');
-      this.from = from.format();
-      this.to = from.add(6, 'months').format();
+      this.setRange(moment(parts.get(YEAR), 'YYYY').add(6 * (parts.get(HALF) - 1), 'months'), 6, 'months');
     }
 
-    if (sameValues(foundParts, [Parts.YEAR, Parts.QUARTER])) {
+    if (parts.hasExactlyTypes([YEAR, QUARTER])) {
       this.type = DateRange.Type.QUARTER;
-      const from = moment(data[Parts.YEAR], 'YYYY').add(3 * (data[Parts.QUARTER] - 1), 'months');
-      this.from = from.format();
-      this.to = from.add(3, 'months').format();
+      this.setRange(moment(parts.get(YEAR), 'YYYY').add(3 * (parts.get(QUARTER) - 1), 'months'), 3, 'months');
     }
 
-    if (sameValues(foundParts, [Parts.YEAR, Parts.MONTH])) {
+    if (parts.hasExactlyTypes([YEAR, MONTH])) {
       this.type = DateRange.Type.MONTH;
-      const from = moment(data[Parts.YEAR] + '-' + data[Parts.MONTH], 'YYYY-MM');
-      this.from = from.format();
-      this.to = from.add(1, 'months').format();
+      this.setRange(moment(parts.get(YEAR) + '-' + parts.get(MONTH), 'YYYY-MM'), 1, 'month');
     }
 
-    if (sameValues(foundParts, [Parts.YEAR, Parts.MONTH, Parts.DAY])) {
+    if (parts.hasExactlyTypes([YEAR, MONTH, DAY])) {
       this.type = DateRange.Type.DATE;
-      const from = moment(data[Parts.YEAR] + '-' + data[Parts.MONTH] + '-' + data[Parts.DAY], 'YYYY-MM-DD');
-      this.from = from.format();
-      this.to = from.add(1, 'day').format();
+      this.setRange(moment(parts.get(YEAR) + '-' + parts.get(MONTH) + '-' + parts.get(DAY), 'YYYY-MM-DD'), 1, 'day');
     }
 
-    if (sameValues(foundParts, [Parts.YEAR, Parts.MONTH, Parts.DAY, Parts.TIME])) {
+    if (parts.hasExactlyTypes([YEAR, MONTH, DAY, TIME])) {
       this.type = DateRange.Type.DATETIME;
-      const from = moment(data[Parts.YEAR] + '-' + data[Parts.MONTH] + '-' + data[Parts.DAY] + 'T' + data[Parts.TIME], 'YYYY-MM-DDTHH:mm');
-      this.from = from.format();
-      this.to = from.add(1, 'minute').format();
+      this.setRange(moment(parts.get(YEAR) + '-' + parts.get(MONTH) + '-' + parts.get(DAY) + 'T' + parts.get(TIME), 'YYYY-MM-DDTHH:mm'), 1, 'minute');
     }
+  }
+
+  setRange(momentFrom, size, unit) {
+    this.from = momentFrom.format();
+    this.to = momentFrom.add(size, unit).format();
   }
 }
 

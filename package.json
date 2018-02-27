@@ -1,6 +1,6 @@
 {
   "name": "date-range",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple date range class",
   "main": "index.js",
   "scripts": {
