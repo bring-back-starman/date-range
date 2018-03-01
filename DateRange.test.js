@@ -3,6 +3,7 @@ const DateRange = require('./index');
 test('TBA', () => {
   expect(new DateRange('TBA')).toHaveProperty('type', DateRange.Type.TBA);
   expect(new DateRange('TBD')).toHaveProperty('type', DateRange.Type.TBA);
+  expect(new DateRange(' To Be  Decided ')).toHaveProperty('type', DateRange.Type.TBA);
 });
 
 test('Year', () => {

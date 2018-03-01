@@ -9,6 +9,7 @@ const QUARTER = 'q';
 const HALF = 'h';
 const YEAR = 'y';
 const SKIP = 's';
+const TYPES = [TIME, DAY, MONTH, QUARTER, HALF, YEAR, SKIP];
 
 // Parts that are recognized but should be skipped
 const skippableParts = ['tba', 'tbd', 'net'];
@@ -176,8 +177,12 @@ class PartsList {
     }
 
     return format.every((f, index) => {
-      if (_.isString(f)) {
+      if (_.isString(f) && TYPES.includes(f)) {
         return this.parts[index].type === f;
+      }
+
+      if (_.isString(f)) {
+        return this.parts[index].raw === f;
       }
 
       if (_.isRegExp(f)) {
@@ -210,6 +215,11 @@ class DateRange {
     }
 
     let parts = new PartsList(value);
+
+    if (parts.isFormat(['to', 'be', 'decided'])) {
+      this.type = DateRange.Type.TBA;
+      return;
+    }
 
     if (parts.hasDuplicateTypes()) {
       throw new Error('Could not parse date "' + value + '", same part found multiple times');
