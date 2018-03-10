@@ -206,6 +206,10 @@ class PartsList {
   get(type) {
     return _.find(this.parts, { type });
   }
+
+  getValue(type) {
+    return this.get(type).value;
+  }
 }
 
 class DateRange {
@@ -239,38 +243,39 @@ class DateRange {
 
     if (parts.hasExactlyTypes([YEAR])) {
       this.type = DateRange.Type.YEAR;
-      this.setRange(moment(parts.get(YEAR), 'YYYY'), 1, 'year');
+      this.setRange(moment(parts.getValue(YEAR), 'YYYY'), 1, 'year');
     }
 
     if (parts.hasExactlyTypes([YEAR, HALF])) {
       this.type = DateRange.Type.HALF;
-      this.setRange(moment(parts.get(YEAR), 'YYYY').add(6 * (parts.get(HALF) - 1), 'months'), 6, 'months');
+      this.setRange(moment(parts.getValue(YEAR), 'YYYY').add(6 * (parts.getValue(HALF) - 1), 'months'), 6, 'months');
     }
 
     if (parts.hasExactlyTypes([YEAR, QUARTER])) {
       this.type = DateRange.Type.QUARTER;
-      this.setRange(moment(parts.get(YEAR), 'YYYY').add(3 * (parts.get(QUARTER) - 1), 'months'), 3, 'months');
+      this.setRange(moment(parts.getValue(YEAR), 'YYYY').add(3 * (parts.getValue(QUARTER) - 1), 'months'), 3, 'months');
     }
 
     if (parts.hasExactlyTypes([YEAR, MONTH])) {
       this.type = DateRange.Type.MONTH;
-      this.setRange(moment(parts.get(YEAR) + '-' + parts.get(MONTH), 'YYYY-MM'), 1, 'month');
+      this.setRange(moment(parts.getValue(YEAR) + '-' + parts.getValue(MONTH), 'YYYY-MM'), 1, 'month');
     }
 
     if (parts.hasExactlyTypes([YEAR, MONTH, DAY])) {
       this.type = DateRange.Type.DATE;
-      this.setRange(moment(parts.get(YEAR) + '-' + parts.get(MONTH) + '-' + parts.get(DAY), 'YYYY-MM-DD'), 1, 'day');
+      this.setRange(moment(parts.getValue(YEAR) + '-' + parts.getValue(MONTH) + '-' + parts.getValue(DAY), 'YYYY-MM-DD'), 1, 'day');
     }
 
     if (parts.hasExactlyTypes([YEAR, MONTH, DAY, TIME])) {
       this.type = DateRange.Type.DATETIME;
-      this.setRange(moment(parts.get(YEAR) + '-' + parts.get(MONTH) + '-' + parts.get(DAY) + 'T' + parts.get(TIME), 'YYYY-MM-DDTHH:mm'), 1, 'minute');
+      this.setRange(moment(parts.getValue(YEAR) + '-' + parts.getValue(MONTH) + '-' + parts.getValue(DAY) + 'T' + parts.getValue(TIME), 'YYYY-MM-DDTHH:mm'), 1, 'minute');
     }
   }
 
   setRange(momentFrom, size, unit) {
-    this.from = momentFrom.format();
-    this.to = momentFrom.add(size, unit).format();
+    const format = 'YYYY-MM-DD[T]HH:mm:SS';
+    this.from = momentFrom.format(format);
+    this.to = momentFrom.add(size, unit).format(format);
   }
 }
 

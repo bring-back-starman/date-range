@@ -14,14 +14,14 @@ import DateRange from 'date-range';
 new DateRange('2019');
 // DateRange {
 //   type: DateRange.Type.YEAR,
-//   from: '2019-01-01T00:00:00+01:00',
-//   to: '2020-01-01T00:00:00+01:00' }
+//   from: '2019-01-01T00:00:00',
+//   to: '2020-01-01T00:00:00' }
 
 new DateRange('2018 Q3');
 // DateRange {
 //   type: DateRange.Type.QUARTER,
-//   from: '2018-07-01T00:00:00+02:00',
-//   to: '2018-10-01T00:00:00+02:00' }
+//   from: '2018-07-01T00:00:00',
+//   to: '2018-10-01T00:00:00' }
 
 ```
 
