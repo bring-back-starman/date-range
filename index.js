@@ -298,10 +298,6 @@ class DateRange {
     const from = moment.max(moment(this.from), moment(other.from));
     const to = moment.min(moment(this.to), moment(other.to));
 
-    if (moment.min(from, to) !== from) {
-      return moment.duration(0);
-    }
-
     return moment.duration(to.diff(from));
   }
 }

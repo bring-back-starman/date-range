@@ -88,5 +88,5 @@ test('Overlap', () => {
     from:'2018-01-20T00:00:00',
     to: '2018-02-08T00:00:00',
   }, '12 days');
-  expect(new DateRange('Jan 18').getOverlapDuration('2020').asSeconds()).toBe(0);
+  expect(new DateRange('Jan 18').getOverlapDuration('2020').asSeconds()).toBeLessThan(0);
 });
