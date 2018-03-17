@@ -3,10 +3,17 @@ const { TBA, YEAR, HALF, QUARTER, MONTH, DATE, DATETIME } = DateRange.Type;
 
 const shouldParse = (input, type, from, to) => {
   const date = new DateRange(input);
-
   expect(date).toHaveProperty('type', type);
   expect(date).toHaveProperty('from', from);
   expect(date).toHaveProperty('to', to);
+};
+
+const duration = (value) => new DateRange(value).getDuration().humanize();
+const overlap = (v1, v2) => new DateRange(v1).getOverlapDuration(v2).humanize();
+
+const expectOverlap = (v1, v2, duration) => {
+  expect(overlap(v1, v2)).toBe(duration);
+  expect(overlap(v2, v1)).toBe(duration);
 };
 
 test('TBA', () => {
@@ -52,4 +59,34 @@ test('Date Time', () => {
   shouldParse('2018 Apr 2 [20:30]',     DATETIME, '2018-04-02T20:30:00', '2018-04-02T20:31:00');
   shouldParse('2018 Mar 29 [15:19]',    DATETIME, '2018-03-29T15:19:00', '2018-03-29T15:20:00');
   shouldParse('02 December 15:07 2018', DATETIME, '2018-12-02T15:07:00', '2018-12-02T15:08:00');
+});
+
+test('Constructor', () => {
+  shouldParse(new DateRange('17 jan 18'), DATE, '2018-01-17T00:00:00', '2018-01-18T00:00:00');
+  shouldParse({
+    type: DATE,
+    from:'2018-01-17T00:00:00',
+    to: '2018-01-18T00:00:00',
+  }, DATE, '2018-01-17T00:00:00', '2018-01-18T00:00:00');
+});
+
+test('Duration', () => {
+  expect(duration('13 Jan 2019 16:30')).toBe('a minute');
+  expect(duration('7 Apr 18')).toBe('a day');
+  expect(duration('Aug 18')).toBe('a month');
+  expect(duration('Q3 18')).toBe('3 months');
+  expect(duration('H1 18')).toBe('6 months');
+  expect(duration('2020')).toBe('a year');
+});
+
+test('Overlap', () => {
+  expectOverlap('Jan 18', 'January 2018', 'a month');
+  expectOverlap('Jan 18', '6 Jan 18', 'a day');
+  expectOverlap('Q2 18', 'H1 18', '3 months');
+  expectOverlap('jan 18', {
+    type: DATE,
+    from:'2018-01-20T00:00:00',
+    to: '2018-02-08T00:00:00',
+  }, '12 days');
+  expect(new DateRange('Jan 18').getOverlapDuration('2020').asSeconds()).toBe(0);
 });

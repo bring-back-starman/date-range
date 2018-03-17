@@ -8,7 +8,7 @@ yarn add bring-back-starman/date-range
 ```
 
 ## How to use
-```
+```js
 import DateRange from 'date-range';
 
 new DateRange('2019');
@@ -23,6 +23,9 @@ new DateRange('2018 Q3');
 //   from: '2018-07-01T00:00:00',
 //   to: '2018-10-01T00:00:00' }
 
+const range = DateRange('Jan 18');
+range.getDuration().humanize(); // 'a month'
+range.getOverlapDuration('6 january 2018').humanize(); // 'a day'
 ```
 
 ## Supported formats

@@ -214,6 +214,14 @@ class PartsList {
 
 class DateRange {
   constructor(value) {
+    if (value instanceof Object) {
+      this.type = value.type;
+      this.from = value.from;
+      this.to = value.to;
+
+      return;
+    }
+
     if (!_.isString(value)) {
       throw new Error('Value must be a string');
     }
@@ -276,6 +284,25 @@ class DateRange {
     const format = 'YYYY-MM-DD[T]HH:mm:SS';
     this.from = momentFrom.format(format);
     this.to = momentFrom.add(size, unit).format(format);
+  }
+
+  getDuration() {
+    return moment.duration(moment(this.to).diff(moment(this.from)));
+  }
+
+  getOverlapDuration(other) {
+    if (!(other instanceof DateRange)) {
+      other = new DateRange(other);
+    }
+
+    const from = moment.max(moment(this.from), moment(other.from));
+    const to = moment.min(moment(this.to), moment(other.to));
+
+    if (moment.min(from, to) !== from) {
+      return moment.duration(0);
+    }
+
+    return moment.duration(to.diff(from));
   }
 }
 
