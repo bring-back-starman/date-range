@@ -16,6 +16,8 @@ const expectOverlap = (v1, v2, duration) => {
   expect(overlap(v2, v1)).toBe(duration);
 };
 
+const expectHumanized = (value, humanized) => expect(new DateRange(value).humanize()).toBe(humanized);
+
 test('TBA', () => {
   shouldParse('TBA', TBA);
   shouldParse('TBD', TBA);
@@ -89,4 +91,18 @@ test('Overlap', () => {
     to: '2018-02-08T00:00:00',
   }, '12 days');
   expect(new DateRange('Jan 18').getOverlapDuration('2020').asSeconds()).toBeLessThan(0);
+});
+
+test('Humanize', () => {
+  const y = new Date().getFullYear();
+
+  expectHumanized('TBD', 'To be announced');
+  expectHumanized('H2 ' + y, 'End of the year');
+  expectHumanized('H1 2030', 'Early 2030');
+  expectHumanized('Q2 ' + y, '2nd quarter');
+  expectHumanized('Q3 2030', 'Q3 2030');
+  expectHumanized('jan ' + y, 'January');
+  expectHumanized('jan 2030', 'Jan 2030');
+  expectHumanized('10 apr ' + y, 'April 10');
+  expectHumanized('10 apr 2030', 'Apr 10, 2030');
 });

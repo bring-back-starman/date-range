@@ -300,6 +300,45 @@ class DateRange {
 
     return moment.duration(to.diff(from));
   }
+
+  humanize() {
+    const from = this.from && moment(this.from);
+    const thisYear = from && from.format('YYYY') === moment().format('YYYY');
+
+    switch (this.type) {
+      case DateRange.Type.TBA:
+        return 'To be announced';
+      case DateRange.Type.YEAR:
+        return from.format('YYYY');
+      case DateRange.Type.HALF:
+        const early = from.format('MMM') === 'Jan';
+
+        if (thisYear) {
+          return (early ? 'Beginning' : 'End') + ' of the year';
+        }
+
+        return (early ? 'Early' : 'Late') + ' ' + from.format('YYYY');
+      case DateRange.Type.QUARTER:
+        if (thisYear) {
+          return from.format('Qo') + ' quarter';
+        }
+
+        return 'Q' + from.format('Q') + ' ' + from.format('YYYY');
+      case DateRange.Type.MONTH:
+        if (thisYear) {
+          return from.format('MMMM');
+        }
+
+        return from.format('MMM YYYY');
+      case DateRange.Type.DATE:
+      case DateRange.Type.DATETIME:
+        if (thisYear) {
+          return from.format('MMMM DD');
+        }
+
+        return from.format('ll');
+    }
+  }
 }
 
 DateRange.Type = {
