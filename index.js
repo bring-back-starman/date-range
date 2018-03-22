@@ -1,4 +1,4 @@
-const moment = require('moment');
+const moment = require('moment-timezone');
 const _ = require('lodash');
 
 // Possible types of a Part
@@ -284,6 +284,15 @@ class DateRange {
     const format = 'YYYY-MM-DD[T]HH:mm:SS';
     this.from = momentFrom.format(format);
     this.to = momentFrom.add(size, unit).format(format);
+  }
+
+  setTimeZone(timeZone) {
+    if (this.type === DateRange.Type.TBA) {
+      return;
+    }
+
+    this.from = moment.tz(this.from, timeZone).format();
+    this.to = moment.tz(this.to, timeZone).format();
   }
 
   getDuration() {

@@ -106,3 +106,23 @@ test('Humanize', () => {
   expectHumanized('10 apr ' + y, 'April 10');
   expectHumanized('10 apr 2030', 'Apr 10, 2030');
 });
+
+describe('Time zone', () => {
+  test('set time zone', () => {
+    const range = new DateRange('dec 25 2020 18:31');
+    range.setTimeZone('America/New_York');
+
+    expect(range).toHaveProperty('from', '2020-12-25T18:31:00-05:00');
+    expect(range).toHaveProperty('to', '2020-12-25T18:32:00-05:00');
+  });
+
+  test('set time zone', () => {
+    const range1 = new DateRange('dec 25 2020 12:00');
+    range1.setTimeZone('America/New_York');
+
+    const range2 = new DateRange('dec 25 2020 12:00');
+    range2.setTimeZone('Europe/Paris');
+
+    expect(range1.getOverlapDuration(range2).asHours()).toBeCloseTo(-6, 1);
+  });
+});
