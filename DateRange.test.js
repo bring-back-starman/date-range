@@ -1,4 +1,5 @@
 const DateRange = require('./index');
+const moment = require('moment-timezone');
 const { TBA, YEAR, HALF, QUARTER, MONTH, DATE, DATETIME } = DateRange.Type;
 
 const shouldParse = (input, type, from, to) => {
@@ -116,7 +117,7 @@ describe('Time zone', () => {
     expect(range).toHaveProperty('to', '2020-12-25T18:32:00-05:00');
   });
 
-  test('set time zone', () => {
+  test('overlap', () => {
     const range1 = new DateRange('dec 25 2020 12:00');
     range1.setTimeZone('America/New_York');
 
@@ -124,5 +125,15 @@ describe('Time zone', () => {
     range2.setTimeZone('Europe/Paris');
 
     expect(range1.getOverlapDuration(range2).asHours()).toBeCloseTo(-6, 1);
+  });
+
+  test('humanize', () => {
+    const range1 = new DateRange('dec 31 2030 23:00');
+    range1.setTimeZone('America/New_York');
+    expect(range1.humanize()).toBe('Dec 31, 2030');
+
+    const range2 = new DateRange('dec 31 2030 23:00');
+    range2.setTimeZone('Europe/Paris');
+    expect(range2.humanize()).toBe('Dec 31, 2030');
   });
 });

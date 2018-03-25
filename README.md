@@ -38,6 +38,18 @@ const range4 = new DateRange({
 });
 ```
 
+### Time zones
+```js
+import DateRange from 'date-range';
+
+const range = new DateRange('Jan 16 2019');
+range.setTimeZone('America/New_York');
+// DateRange {
+//   type: 'd',
+//   from: '2019-01-16T00:00:00-05:00',
+//   to: '2019-01-17T00:00:00-05:00' }
+```
+
 ### Durations and overlaps
 `getDuration` and `getOverlapDuration` return a moment [Duration](https://momentjs.com/docs/#/durations/) object.
 ```js

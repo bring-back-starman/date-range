@@ -311,12 +311,16 @@ class DateRange {
   }
 
   humanize() {
-    const from = this.from && moment(this.from);
-    const thisYear = from && from.format('YYYY') === moment().format('YYYY');
+    if (this.type === DateRange.Type.TBA) {
+      return 'To be announced';
+    }
+
+    const [, date] = this.from.match(/^(.+)([+-]\d\d:\d\d)$/) || [,this.from];
+    const from = moment(date);
+    const thisYear = from.format('YYYY') === moment().format('YYYY');
+    const nextSixMonths = from.diff().asMonths() < 6;
 
     switch (this.type) {
-      case DateRange.Type.TBA:
-        return 'To be announced';
       case DateRange.Type.YEAR:
         return from.format('YYYY');
       case DateRange.Type.HALF:
@@ -341,7 +345,7 @@ class DateRange {
         return from.format('MMM YYYY');
       case DateRange.Type.DATE:
       case DateRange.Type.DATETIME:
-        if (thisYear) {
+        if (thisYear || nextSixMonths) {
           return from.format('MMMM DD');
         }
 
