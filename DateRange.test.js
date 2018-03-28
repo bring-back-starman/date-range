@@ -106,6 +106,11 @@ test('Humanize', () => {
   expectHumanized('jan 2030', 'Jan 2030');
   expectHumanized('10 apr ' + y, 'April 10');
   expectHumanized('10 apr 2030', 'Apr 10, 2030');
+  expectHumanized({
+      type: 'q',
+      from: '2030-04-01T04:00:00.000Z',
+      to: '2030-07-01T04:00:00.000Z' },
+    'Q2 2030');
 });
 
 describe('Time zone', () => {

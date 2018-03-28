@@ -315,10 +315,10 @@ class DateRange {
       return 'To be announced';
     }
 
-    const [, date] = this.from.match(/^(.+)([+-]\d\d:\d\d)$/) || [,this.from];
+    const [, date] = this.from.match(/^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)/) || [,this.from];
     const from = moment(date);
     const thisYear = from.format('YYYY') === moment().format('YYYY');
-    const nextSixMonths = from.diff().asMonths() < 6;
+    const nextSixMonths = moment.duration(from.diff()).asMonths() < 6;
 
     switch (this.type) {
       case DateRange.Type.YEAR:
