@@ -310,14 +310,13 @@ class DateRange {
     return moment.duration(to.diff(from));
   }
 
-  humanize() {
+  humanize(timeZone = 'UTC') {
     if (this.type === DateRange.Type.TBA) {
       return 'To be announced';
     }
 
-    const [, date] = this.from.match(/^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)/) || [,this.from];
-    const from = moment(date);
-    const thisYear = from.format('YYYY') === moment().format('YYYY');
+    const from = moment(this.from).tz(timeZone);
+    const thisYear = from.format('YYYY') === moment().tz(timeZone).format('YYYY');
     const nextSixMonths = moment.duration(from.diff()).asMonths() < 6;
 
     switch (this.type) {
@@ -346,7 +345,7 @@ class DateRange {
       case DateRange.Type.DATE:
       case DateRange.Type.DATETIME:
         if (thisYear || nextSixMonths) {
-          return from.format('MMMM DD');
+          return from.format('MMMM D');
         }
 
         return from.format('ll');

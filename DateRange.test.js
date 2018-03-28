@@ -104,8 +104,8 @@ test('Humanize', () => {
   expectHumanized('Q3 2030', 'Q3 2030');
   expectHumanized('jan ' + y, 'January');
   expectHumanized('jan 2030', 'Jan 2030');
-  expectHumanized('10 apr ' + y, 'April 10');
-  expectHumanized('10 apr 2030', 'Apr 10, 2030');
+  expectHumanized('8 apr ' + y, 'April 8');
+  expectHumanized('8 apr 2030', 'Apr 8, 2030');
   expectHumanized({
       type: 'q',
       from: '2030-04-01T04:00:00.000Z',
@@ -134,11 +134,16 @@ describe('Time zone', () => {
 
   test('humanize', () => {
     const range1 = new DateRange('dec 31 2030 23:00');
-    range1.setTimeZone('America/New_York');
     expect(range1.humanize()).toBe('Dec 31, 2030');
 
-    const range2 = new DateRange('dec 31 2030 23:00');
+    const range2 = new DateRange('jan 1 2030 00:30');
     range2.setTimeZone('Europe/Paris');
-    expect(range2.humanize()).toBe('Dec 31, 2030');
+    expect(range2.humanize()).toBe('Dec 31, 2029');
+    expect(range2.humanize('Europe/Paris')).toBe('Jan 1, 2030');
+
+    const range3 = new DateRange('dec 31 2030 23:00');
+    range3.setTimeZone('America/New_York');
+    expect(range3.humanize()).toBe('Jan 1, 2031');
+    expect(range3.humanize('America/New_York')).toBe('Dec 31, 2030');
   });
 });
